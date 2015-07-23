@@ -10,9 +10,13 @@ import java.util.TimerTask;
  */
 public class MouthUpdate extends TimerTask {
 
-    private volatile boolean moving = false;
+    private enum MovementState {
+        TALKING,
+        CLOSING;
+    }
+    private MovementState state = MovementState.TALKING;
     private Activity parent;
-    private boolean down;
+    private static boolean down;
 
     public MouthUpdate(Activity par){
         parent = par;
@@ -20,11 +24,10 @@ public class MouthUpdate extends TimerTask {
 
     @Override
     public void run() {
-
         View mouth = parent.findViewById(R.id.imageView2);
         if(mouth.getPaddingTop()==0){
             down = true;
-            if(!moving){ return; }
+            if(state == MovementState.CLOSING) cancel();
         }
         else if(mouth.getPaddingTop()==35){ down = false; }
         parent.runOnUiThread(new Runnable() {
@@ -36,30 +39,23 @@ public class MouthUpdate extends TimerTask {
         });
     }
 
+    public void closeAndCancel(){
+        down = false;
+        state = MovementState.CLOSING;
+    }
+
     private void move(View mouth) {
-        if(!moving){
-            mouth.setPadding(0,0,0,0);
+        if (down) {
+            mouth.setPadding(0, mouth.getPaddingTop() + 1, 0, 0);
+        } else {
+            mouth.setPadding(0, mouth.getPaddingTop() - 1, 0, 0);
         }
-        else if(down){
-            mouth.setPadding(0,mouth.getPaddingTop()+1,0,0);
+        if (mouth.getPaddingTop() > 35) {
+            mouth.setPadding(0, 35, 0, 0);
         }
-        else{
-            mouth.setPadding(0,mouth.getPaddingTop()-1,0,0);
-        }
-        if(mouth.getPaddingTop() > 35){
-            mouth.setPadding(0,35,0,0);
-        }
-        if(mouth.getPaddingTop() < 0){
-            mouth.setPadding(0,0,0,0);
+        if (mouth.getPaddingTop() < 0) {
+            mouth.setPadding(0, 0, 0, 0);
         }
         mouth.invalidate();
-    }
-
-    public void start(){
-        moving = true;
-    }
-
-    public void stop(){
-        moving = false;
     }
 }

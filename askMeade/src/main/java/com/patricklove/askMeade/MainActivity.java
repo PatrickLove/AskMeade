@@ -23,7 +23,6 @@ public class MainActivity extends ActionBarActivity {
     private AudioManager audMan;
     private MediaPlayer mp = new MediaPlayer();
     private int[] sounds;
-    private int currentStream = 0;
     private Timer frameTime = new Timer();
     private MouthUpdate currentLoop;
 
@@ -38,8 +37,7 @@ public class MainActivity extends ActionBarActivity {
         mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mediaPlayer) {
-                currentLoop.cancel();
-                currentLoop = null;
+                currentLoop.closeAndCancel();
             }
         });
     }
@@ -62,8 +60,8 @@ public class MainActivity extends ActionBarActivity {
         try {
             if(currentLoop != null){
                 currentLoop.cancel();
-                currentLoop = new MouthUpdate(this);
             }
+            currentLoop = new MouthUpdate(this);
             Random chooser = new Random();
             int chosenSound = chooser.nextInt(sounds.length);
             float vol = (float) audMan.getStreamVolume(AudioManager.STREAM_MUSIC)/ (float) audMan.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
